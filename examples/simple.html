@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+	<head>
+
+		<script src="../bower_components/angularjs/angular.js"></script>
+		<script src="../typeahead.js"></script>
+		<script src="names.js"></script>
+		<script src="simple.js"></script>
+
+		<style>
+			.mw-typeahead__active {
+				font-weight: bold;
+			}
+		</style>
+	</head>
+
+	<body ng-app="simple" ng-controller="SimpleCtrl">
+		<h3>Typeahead:</h3>
+
+		<mw-typeahead ng-model="selectedItem"
+		              case-sensitive="false"
+		              item-query="queryNames(prefix)"
+		              max-items="10"
+		              item-text="item.firstName + ' ' + item.lastName">
+			<li>{{::item.firstName + ' ' + item.lastName}}</li>
+		</mw-typeahead>
+
+		<h4>Selected item:</h4>
+
+		<div>
+			Firstname: {{ selectedItem.firstName }}<br />
+			Lastname: {{ selectedItem.lastName }}
+		</div>
+	</body>
+</html>

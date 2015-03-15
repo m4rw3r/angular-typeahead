@@ -1,0 +1,25 @@
+{
+  "name": "angular-mw-typeahead",
+  "main": "typeahead.js",
+  "version": "0.0.0",
+  "authors": [
+    "Martin Wernstål <m4rw3r@gmail.com>"
+  ],
+  "description": "Flexible AngularJS Typeahead directive without external dependencies.",
+  "keywords": [
+    "angularjs",
+    "typeahead",
+    "directive"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "examples",
+    "tests"
+  ],
+  "devDependencies": {
+    "angularjs": "1.3.x"
+  }
+}
