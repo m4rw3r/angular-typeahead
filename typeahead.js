@@ -47,7 +47,7 @@ function mwTypeahead($timeout) {
     },
     template: "<div>" +
       "<input type=\"text\" ng-model=\"text\" ng-model-options=\"{debounce: 100}\" />" +
-      "<ul ng-transclude ng-show=\"items.length > 0 && showList\"></ul>" +
+      "<ul ng-show=\"items.length > 0 && showList\"></ul>" +
     "</div>",
     link: function($scope, elem, attrs, ngModel, $transclude) {
       /* The latest issued call to elem-query */
