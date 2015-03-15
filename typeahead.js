@@ -1,6 +1,6 @@
 "use strict";
 
-var ACTIVE_CLASS   = "d-typeahead__active";
+var ACTIVE_CLASS   = "mw-typeahead__active";
 var KEY_ARROW_DOWN = 40;
 var KEY_ARROW_UP   = 38;
 var KEY_ENTER      = 13;
@@ -11,18 +11,18 @@ var KEY_ESC        = 27;
  *
  * Example:
  * <code>
- *     <d-typeahead item-query="listUsers(prefix)"
+ *     <mw-typeahead item-query="listUsers(prefix)"
  *                  item-text="item.email"
  *                  item-max="10"
- *                  item-active-class="d-typeahead__active"
+ *                  item-active-class="mw-typeahead__active"
  *                  ng-model="selectedUser"
  *                  ng-required="true">
  *       <li>{{::item.email}}</li>
- *     </d-typeahead>
+ *     </mw-typeahead>
  * </code>
  */
-dTypeahead.$inject = ["$timeout"];
-function dTypeahead($timeout) {
+mwTypeahead.$inject = ["$timeout"];
+function mwTypeahead($timeout) {
   return {
     restrict:   "E",
     replace:    true,
@@ -246,5 +246,5 @@ function dTypeaheadElem(elem, $scope, $parent) {
   });
 }
 
-angular.module("dTypeahead", [])
-  .directive("dTypeahead", dTypeahead);
+angular.module("mw-typeahead", [])
+  .directive("mwTypeahead", mwTypeahead);
