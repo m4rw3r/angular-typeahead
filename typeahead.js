@@ -1,11 +1,16 @@
 (function(angular) {
   "use strict";
 
-  var ACTIVE_CLASS   = "mw-typeahead--active";
   var KEY_ARROW_DOWN = 40;
   var KEY_ARROW_UP   = 38;
   var KEY_ENTER      = 13;
   var KEY_ESC        = 27;
+  
+  var CONFIG_DEFAULTS = {
+    activeClass:   "mw-typeahead--active",
+    caseSensitive: true,
+    itemMax:       10
+  };
 
   function identity(a) {
     return a;
@@ -17,6 +22,13 @@
     };
   }
 
+  /**
+   * Function attempting to parse a boolean from a string.
+   * 
+   * @param  {*}
+   * @param  {*=}
+   * @return {boolean|*}  Boolean or the value set as defaultValue
+   */
   function fromBool(maybeStr, defaultValue) {
     switch(typeof maybeStr === "string" ? maybeStr.toLowerCase().trim() : "") {
       case "true":
@@ -29,22 +41,97 @@
   }
 
   /**
+   * Provider for global configuration of defaults.
+   * 
+   * @constructor
+   */
+  function MwTypeaheadConfigProvider() {
+    this._config = angular.extend({}, CONFIG_DEFAULTS);
+    this.$get    = function() {
+      return this._config;
+    };
+    
+    /**
+     * Sets the default class-name which will be applied to highlighted
+     * items in the suggestion-list.
+     * 
+     * @param {string}
+     */
+    this.setActiveClass = function(klass) {
+      this._config.activeClass = klass;
+    };
+    /**
+     * Sets the default case-sensitivity setting for local matching
+     * of item texts and input value.
+     * 
+     * @param {boolean}
+     */
+    this.setCaseSensitive = function(value) {
+      this._config.caseSensitive = value;
+    };
+    /**
+     * Sets the default expected maximum number of items returned from
+     * the item-query expression.
+     * 
+     * @param {number}
+     */
+    this.setItemMax = function(value) {
+      this._config.maxItems = value;
+    };
+  }
+
+  /**
    * Flexible typeahead directive.
+   * 
+   * Required attributes:
+   *  * ng-model:
+   *      The model instance to put the selected value in, standard
+   *      angularjs directive.
+   *  * item-query:
+   *      The expression to evaluate to retrieve additional items,
+   *      can return a populated array or a promise of one. In the expression
+   *      the parameter ``prefix`` will be set to the user-typed string in the
+   *      expression.
+   *  * item-text:
+   *      The expression evaluated for each item when performing offline
+   *      filtering, matching against entered text and filling the input when
+   *      the model is selected.
+   * 
+   * Optional attributes:
+   *  * item-max:
+   *      The expected maximum number of items in the response from the
+   *      item-query expression. If the number of items returned is less than
+   *      this the typeahead directive will exclusively use offline filtering
+   *      against the evaluated item-text expressions.
+   *      
+   *      Default: 10
+   *      
+   *  * active-class:
+   *      The class name applied to the highlighted item in the typeahead
+   *      suggestion-list.
+   *      
+   *      Default: "mw-typeahead__item--active"
+   *      
+   *  * case-sensitive:
+   *      If the matching on item-text should be case-sensitive or not.
+   *      
+   *      Default: true
    *
+   * All of the defaults of the optional attributes can be changed via the
+   * mwTypeaheadConfig provider.
+   * 
    * Example:
    * <code>
-   *     <mw-typeahead item-query="listUsers(prefix)"
-   *                  item-text="item.email"
-   *                  item-max="10"
-   *                  item-active-class="mw-typeahead__active"
-   *                  ng-model="selectedUser"
-   *                  ng-required="true">
-   *       <li>{{::item.email}}</li>
-   *     </mw-typeahead>
+   *   <mw-typeahead item-query="listUsers(prefix)"
+   *                 item-text="item.email"
+   *                 ng-model="selectedUser"
+   *                 ng-required="true">
+   *      <li>{{::item.email}}</li>
+   *   </mw-typeahead>
    * </code>
    */
-  mwTypeahead.$inject = ["$timeout"];
-  function mwTypeahead($timeout) {
+  mwTypeahead.$inject = ["mwTypeaheadConfig", "$timeout"];
+  function mwTypeahead(config, $timeout) {
     return {
       restrict:   "E",
       replace:    true,
@@ -52,22 +139,12 @@
       transclude: true,
       scope:      {
         /* Expression to be evaluated with the parameter 'prefix'.
-           Should return a promise of a list of items for the given prefix. */
+           Should return a list of items or a promise of a list of items for the given prefix. */
         itemQuery:   "&itemQuery",
         /* Expression to be evaluated with the parameter 'item'.
            Should return a string representation of the item suitable for the
            typeahead */
         itemText:    "&itemText",
-        /* Optional value of the maximum number of expected items in a
-           result from itemQuery. If the number of items returned is fewer
-           then the typeahead will stop querying if the user continues
-           with the same search-term. */
-        itemMax:     "@itemMax",
-        /* Optional value of the class to apply to active items in the
-           suggestion list. Default value is "d-typeahead__actice". */
-        activeClass: "@itemActiveClass",
-        /* If the item is case-sensitive, default: true */
-        caseSensitive: "@caseSensitive"
       },
       template: "<div>" +
         "<input type=\"text\" ng-model=\"text\" ng-model-options=\"{debounce: 100}\" />" +
@@ -79,11 +156,11 @@
         /* The latest issued call to elem-query */
         var currentPromise = null;
         /* If the internal matching and filtering should be case-sensitive */
-        var caseSensitive  = fromBool(attrs.caseSensitive, true);
+        var caseSensitive  = fromBool(attrs.caseSensitive, config.caseSensitive);
         /* Cut off for internal filtering */
-        var itemMax        = attrs.itemMax ? parseInt(attrs.itemMax, 10) : 10;
+        var itemMax        = attrs.itemMax ? parseInt(attrs.itemMax, 10) : config.itemMax;
         /* Class added to active item */
-        var activeClass    = attrs.activeClass || ACTIVE_CLASS;
+        var activeClass    = attrs.activeClass || config.activeClass;
         /* By default just passthrough as we're case-sensitive by default */
         var normalize      = identity;
    
@@ -281,5 +358,6 @@
   }
 
   angular.module("mw-typeahead", [])
+    .provider("mwTypeaheadConfig", MwTypeaheadConfigProvider)
     .directive("mwTypeahead", mwTypeahead);
 })(angular);
