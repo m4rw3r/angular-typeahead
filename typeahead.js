@@ -7,7 +7,7 @@
   var KEY_ENTER      = 13;
   var KEY_ESC        = 27;
 
-  function unit(a) {
+  function identity(a) {
     return a;
   }
 
@@ -85,7 +85,7 @@
         /* Class added to active item */
         var activeClass    = attrs.activeClass || ACTIVE_CLASS;
         /* By default just passthrough as we're case-sensitive by default */
-        var normalize      = unit;
+        var normalize      = identity;
    
         $scope.items       = [];
         $scope.text        = null;
@@ -182,8 +182,7 @@
              applicable.  */
           var p      = null;
           var update = function(items) {
-            /* Only populate items if it was the most current
-               issued promise. */
+            /* Only populate items if it was the most current issued promise. */
             if(currentPromise === p) {
               setItems(items);
 
@@ -250,8 +249,8 @@
         });
 
         elInput.on("blur", function() {
-          /* Timeout required to avoid hiding the list
-             before clicks can be registered. */
+          /* Timeout required to avoid hiding the list before clicks can be
+             registered. */
           $timeout(function() {
             $scope.$apply(function() {
               $scope.showList = false;
