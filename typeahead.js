@@ -1,7 +1,7 @@
 (function(angular) {
   "use strict";
 
-  var ACTIVE_CLASS   = "mw-typeahead__active";
+  var ACTIVE_CLASS   = "mw-typeahead--active";
   var KEY_ARROW_DOWN = 40;
   var KEY_ARROW_UP   = 38;
   var KEY_ENTER      = 13;
