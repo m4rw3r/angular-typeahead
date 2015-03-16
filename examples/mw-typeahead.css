@@ -1,0 +1,77 @@
+/*
+|--------------------------------------------------------------------------
+| mw-typeahead.css
+|--------------------------------------------------------------------------
+|
+| These are the default styles for mw-typeahead.
+|
+| [1] Since people might want to use different left, right, or margin-top
+|     values depending on input field styling, the ul should have its own
+|     class name for easy overriding.
+|
+| [2] A z-index of 1 is enough, assuming that surrounding elements never
+|     have (higher) z-indexes. Which they shouldn't.
+|
+| [3] Quick fix for blur event hiding element before click is registered.
+|     This should probably be fixed with js instead.
+|
+| [4] Don't allow multi-row list objects. There should probably be an
+|     option to toggle this.
+|
+| [5] I dislike when these dropdowns have selectable text. Since this
+|     property isn't part of the W3C specification it must be
+|     vendor-prefixed and without a prefix-free version of the property.
+|
+*/
+
+.mw-typeahead__wrap {
+  position: relative;
+}
+
+.mw-typeahead__wrap ul {
+  margin: 0;
+  padding: .5em 0;
+  list-style: none;
+
+  position: absolute; /* [1] */
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1; /* [2] */
+
+  background: #fff;
+  border-radius: 0 0 3px 3px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.23),
+              0 3px 12px rgba(0, 0, 0, 0.16);
+}
+
+.mw-typeahead__wrap ul:active {
+  display: block !important; /* [3] */
+}
+
+.mw-typeahead__item {
+  display: block;
+  background: #fff;
+  cursor: pointer;
+  padding: .5em .75em;
+
+  overflow: hidden; /* [4] */
+  white-space: nowrap;
+  text-overflow: ellipsis;
+
+  -webkit-user-select: none; /* [5] */
+     -moz-user-select: none;
+      -ms-user-select: none;
+}
+
+.mw-typeahead__item:hover:not(.mw-typeahead--active) {
+  background: #f4f4f4;
+}
+
+.mw-typeahead__item:hover:active {
+  background: #b3e5fc;
+}
+
+.mw-typeahead--active {
+  background: #b3e5fc;
+}
