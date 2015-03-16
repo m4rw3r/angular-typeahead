@@ -1,0 +1,39 @@
+/*
+|--------------------------------------------------------------------------
+| example.css
+|--------------------------------------------------------------------------
+|
+| These styles exist for the sole purpose of making the demo prettier and
+| are not required for the basic look and behaviour of the module.
+|
+*/
+
+body {
+  padding: 1em;
+  background: #039be5;
+  font: normal 14px/1 Helvetica Neue;
+}
+
+main {
+  padding: 1.618em 1em;
+  background: #fff;
+  border-radius: 3px;
+  box-shadow: 0 1.5px 4px rgba(0, 0, 0, 0.24),
+              0 1.5px 6px rgba(0, 0, 0, 0.12);
+
+  display: flex;
+  display: -webkit-flex;
+}
+
+*:first-child {
+  margin-top: 0;
+}
+
+h1 {
+  color: #fff;
+  font-weight: 300;
+}
+
+.mw-typeahead__column {
+  margin-right: 1.618em;
+}
