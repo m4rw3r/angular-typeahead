@@ -72,6 +72,6 @@
   background: #b3e5fc;
 }
 
-.mw-typeahead--active {
+.mw-typeahead__item--active {
   background: #b3e5fc;
 }

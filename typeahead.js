@@ -7,7 +7,7 @@
   var KEY_ESC        = 27;
   
   var CONFIG_DEFAULTS = {
-    activeClass:   "mw-typeahead--active",
+    activeClass:   "mw-typeahead__item--active",
     caseSensitive: true,
     itemMax:       10
   };
