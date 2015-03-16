@@ -120,7 +120,7 @@
           }
           else {
             $scope.text     = toText(item);
-            $scope.showList = !!showList;
+            $scope.showList = showList ? $scope.items.length > 0 : false;
           }
 
           ngModel.$setViewValue(item);
@@ -245,7 +245,7 @@
 
         elInput.on("focus", function() {
           $scope.$apply(function() {
-            $scope.showList = true;
+            $scope.showList = $scope.items.length > 0;
           });
         });
 
