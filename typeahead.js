@@ -14,7 +14,8 @@
   var CONFIG_DEFAULTS = {
     activeClass:   "mw-typeahead__item--active",
     caseSensitive: true,
-    itemMax:       10
+    itemMax:       10,
+    debounce:      100
   };
 
   function identity(a) {
@@ -83,6 +84,14 @@
     this.setItemMax = function(value) {
       this._config.maxItems = value;
     };
+    /**
+     * Sets the default debounce timeout.
+     * 
+     * @param {number}
+     */
+    this.setDebounceTimeout = function(value) {
+      this._config.debounce = value;
+    };
   }
 
   /**
@@ -121,6 +130,14 @@
    *      If the matching on item-text should be case-sensitive or not.
    *      
    *      Default: true
+   *      
+   *  * debounce:
+   *      The timeout in milliseconds before text-changes issues queries
+   *      and updates the suggestion list. This timeout does not apply
+   *      when the user enters the first character or empties the input,
+   *      those events will fire the queries immediately.
+   *      
+   *      Default: 100
    *
    * All of the defaults of the optional attributes can be changed via the
    * mwTypeaheadConfig provider.
@@ -152,7 +169,7 @@
         itemText:    "&itemText",
       },
       template: "<div>" +
-        "<input type=\"text\" ng-model=\"text\" ng-model-options=\"{debounce: 100}\" />" +
+        "<input type=\"text\" ng-model=\"text\" />" +
         "<ul ng-show=\"showList\"></ul>" +
       "</div>",
       link: function($scope, elem, attrs, ngModel, $transclude) {
@@ -160,20 +177,25 @@
         var elInput        = elem.find("input");
         /* The latest issued call to elem-query */
         var currentPromise = null;
+        /* Promise for debounce of text-changes, used for debounce */
+        var debounceText   = null;
         /* If the internal matching and filtering should be case-sensitive */
         var caseSensitive  = fromBool(attrs.caseSensitive, config.caseSensitive);
         /* Cut off for internal filtering */
-        var itemMax        = attrs.itemMax ? parseInt(attrs.itemMax, 10) : config.itemMax;
+        var itemMax        = attrs.hasOwnProperty("itemMax") ? parseInt(attrs.itemMax, 10) : config.itemMax;
         /* Class added to active item */
         var activeClass    = attrs.activeClass || config.activeClass;
+        /* Debounce timeout for changes not going to/from empty string */
+        var debounce       = attrs.hasOwnProperty("debouce") ? parseInt(attrs.debounce, 10) : config.debounce;
         /* By default just passthrough as we're case-sensitive by default */
         var normalize      = identity;
-        /* List of items in the suggestion-list.
+        /**
+         * List of items in the suggestion-list.
          * 
          * @type {Array<{el: JQLite, data: *}>}
          */
-        var itemNodes = [];
-   
+        var itemNodes      = [];
+
         $scope.text        = null;
         $scope.active      = null;
         $scope.showList    = false;
@@ -297,12 +319,8 @@
           $scope.active   = newItems[0] || null;
           $scope.showList = newItems.length > 0;
         }
-
-        ngModel.$render = function() {
-          select(ngModel.$viewValue);
-        };
-
-        $scope.$watch("text", function(newValue, oldValue) {
+        
+        function setText(newValue, oldValue) {
           /* If the value hasn't changed, or if we already have
              it selected, then do not issue any queries */
           if(newValue === oldValue || newValue === toText(ngModel.$viewValue)) {
@@ -327,7 +345,7 @@
              newValue.indexOf(oldValue) === 0) {
             /* Skip query as we can filter locally */
             var needle = normalize(newValue);
-    
+
             p = (currentPromise = itemNodes.filter(function(i) {
               return normalize(toText(i.data)).indexOf(needle) === 0;
             }).map(itemNodeData));
@@ -342,7 +360,22 @@
           else {
             update(p);
           }
+        }
+
+        $scope.$watch("text", function(newValue, oldValue) {
+          $timeout.cancel(debounceText);
+
+          /* Only apply debounce if both values are non-empty,
+             we do not want to delay the immediate population
+             of the suggestion-list */
+          debounceText = $timeout(function() {
+            setText(newValue, oldValue);
+          }, newValue && oldValue ? debounce : 0);
         });
+
+        ngModel.$render = function() {
+          select(ngModel.$viewValue);
+        };
 
         elem.on("keydown", function(e) {
           if(e.keyCode === KEY_ENTER && $scope.active !== ngModel.$viewValue) {
