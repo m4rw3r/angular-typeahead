@@ -130,8 +130,8 @@
    *   </mw-typeahead>
    * </code>
    */
-  mwTypeahead.$inject = ["mwTypeaheadConfig", "$timeout"];
-  function mwTypeahead(config, $timeout) {
+  mwTypeahead.$inject = ["mwTypeaheadConfig", "$animate", "$timeout"];
+  function mwTypeahead(config, $animate, $timeout) {
     return {
       restrict:   "E",
       replace:    true,
@@ -148,7 +148,7 @@
       },
       template: "<div>" +
         "<input type=\"text\" ng-model=\"text\" ng-model-options=\"{debounce: 100}\" />" +
-        "<ul ng-show=\"items.length > 0 && showList\"></ul>" +
+        "<ul ng-show=\"showList\"></ul>" +
       "</div>",
       link: function($scope, elem, attrs, ngModel, $transclude) {
         var elItemList     = elem.find("ul");
@@ -163,8 +163,9 @@
         var activeClass    = attrs.activeClass || config.activeClass;
         /* By default just passthrough as we're case-sensitive by default */
         var normalize      = identity;
+        
+        var itemNodes = [];
    
-        $scope.items       = [];
         $scope.text        = null;
         $scope.active      = null;
         $scope.showList    = false;
@@ -193,14 +194,18 @@
             /* Stop receiving data from promises when the list has been reset */
             currentPromise = false;
 
-            setItems([]);
+            updateItemNodes([]);
           }
           else {
             $scope.text     = toText(item);
-            $scope.showList = showList ? $scope.items.length > 0 : false;
+            $scope.showList = showList ? itemNodes.length > 0 : false;
           }
 
           ngModel.$setViewValue(item);
+        }
+        
+        function itemNodeData(n) {
+          return n.data;
         }
 
         function selectFromText(text) {
@@ -208,7 +213,7 @@
             return select(null);
           }
 
-          var itemTexts = $scope.items.map(toText).map(normalize);
+          var itemTexts = itemNodes.map(itemNodeData).map(toText).map(normalize);
           var matches   = itemTexts.filter(contains(normalize(text)));
 
           if(matches.length === 1) {
@@ -217,30 +222,72 @@
 
             if(idx !== -1) {
               /* Let the user continue to choose */
-              select($scope.items[idx], true);
+              select(itemNodes[idx].data, true);
             }
           }
         }
 
-        function setItems(items) {
-          $scope.items    = items;
-          $scope.active   = items[0] || null;
-          $scope.showList = items.length > 0;
-
-          /* Clear the list and reinitialize with a whole
-             new bunch of items */
-          elItemList.children().remove();
-
-          items.forEach(function(item) {
-            $transclude(function(elItem, itemScope) {
+        /**
+         * updateItemNodes() updates the itemNodes list to match the supplied newItems array.
+         * 
+         * It does an incremental update, only removing the nodes which are not
+         * present in newItems and adding the ones which are lacking in
+         * itemNodes.
+         * 
+         * It is assumed that the order is the same between the input
+         * and the itemNodes array.
+         * 
+         * @param {Array<Object>}
+         */
+        function updateItemNodes(newItems) {
+          function addItem(item, prev) {
+            return $transclude(function(elItem, itemScope) {
               itemScope.item   = item;
               itemScope.select = select;
 
               mwTypeaheadElemLink(elItem, itemScope, $scope, activeClass);
 
-              elItemList.append(elItem);
+              $animate.enter(elItem, elItemList, prev);
             });
-          });
+          }
+          
+          var i    = 0;
+          var j    = 0;
+          var nLen = newItems.length;
+          
+          while(i < nLen || j < itemNodes.length) {
+            if(itemNodes[j] && ! newItems[i]) {
+              /* debug("Removing", JSON.stringify(itemNodes[j].data), "at", j); */
+              $animate.leave(itemNodes[j].el);
+              
+              itemNodes.splice(j, 1);
+              
+              j--;
+            }
+            else if(newItems[i] && ! itemNodes[j]) {
+              /* debug("Adding", JSON.stringify(newItems[i]), "at", j); */
+              itemNodes.splice(j, 0, {
+                data: newItems[i],
+                el:   addItem(newItems[i], itemNodes[j - 1] ? itemNodes[j - 1].el : null)
+              });
+            }
+            else if( ! angular.equals(newItems[i], itemNodes[j].data)) {
+              /* debug("Adding", JSON.stringify(newItems[i]), "at", j, "before", JSON.stringify(itemNodes[j].data)); */
+              itemNodes.splice(j, 0, {
+                data: newItems[i],
+                el:   addItem(newItems[i], itemNodes[j - 1] ? itemNodes[j - 1].el : null)
+              });
+            }
+            /* else {
+              debug("Keeping", JSON.stringify(newItems[i]));
+            } */
+            
+            i++;
+            j++;
+          }
+          
+          $scope.active   = newItems[0] || null;
+          $scope.showList = newItems.length > 0;
         }
 
         ngModel.$render = function() {
@@ -261,21 +308,21 @@
           var update = function(items) {
             /* Only populate items if it was the most current issued promise. */
             if(currentPromise === p) {
-              setItems(items);
+              updateItemNodes(items);
 
               selectFromText($scope.text);
             }
           };
 
           if(newValue && oldValue &&
-             $scope.items.length < itemMax && currentPromise &&
+             itemNodes.length < itemMax && currentPromise &&
              newValue.indexOf(oldValue) === 0) {
             /* Skip query as we can filter locally */
             var needle = normalize(newValue);
     
-            p = (currentPromise = $scope.items.filter(function(i) {
-              return normalize(toText(i)).indexOf(needle) === 0;
-            }));
+            p = (currentPromise = itemNodes.filter(function(i) {
+              return normalize(toText(i.data)).indexOf(needle) === 0;
+            }).map(itemNodeData));
           }
           else {
             p = (currentPromise = $scope.itemQuery({prefix: newValue}));
@@ -300,16 +347,16 @@
             e.preventDefault();
 
             $scope.$apply(function() {
-              $scope.active = $scope.items[($scope.items.indexOf($scope.active) + 1) % $scope.items.length];
+              $scope.active = itemNodes[(itemNodes.map(itemNodeData).indexOf($scope.active) + 1) % itemNodes.length];
             });
           }
           else if(e.keyCode === KEY_ARROW_UP) {
             e.preventDefault();
 
             $scope.$apply(function(){
-              var idx = $scope.items.indexOf($scope.active) - 1;
+              var idx = itemNodes.map(itemNodeData).indexOf($scope.active) - 1;
 
-              $scope.active = $scope.items[idx < 0 ? $scope.items.length - 1 : idx];
+              $scope.active = itemNodes[idx < 0 ? itemNodes.length - 1 : idx].data;
             });
           }
           else if(e.keyCode === KEY_ESC) {
@@ -321,7 +368,7 @@
 
         elInput.on("focus", function() {
           $scope.$apply(function() {
-            $scope.showList = $scope.items.length > 0;
+            $scope.showList = itemNodes.length > 0;
           });
         });
 
