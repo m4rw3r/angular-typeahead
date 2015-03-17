@@ -1,11 +1,16 @@
 (function(angular) {
   "use strict";
 
+  /** @const */
   var KEY_ARROW_DOWN = 40;
+  /** @const */
   var KEY_ARROW_UP   = 38;
+  /** @const */
   var KEY_ENTER      = 13;
+  /** @const */
   var KEY_ESC        = 27;
   
+  /** @const */
   var CONFIG_DEFAULTS = {
     activeClass:   "mw-typeahead__item--active",
     caseSensitive: true,
@@ -163,7 +168,10 @@
         var activeClass    = attrs.activeClass || config.activeClass;
         /* By default just passthrough as we're case-sensitive by default */
         var normalize      = identity;
-        
+        /* List of items in the suggestion-list.
+         * 
+         * @type {Array<{el: JQLite, data: *}>}
+         */
         var itemNodes = [];
    
         $scope.text        = null;
