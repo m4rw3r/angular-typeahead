@@ -17,7 +17,7 @@
   "noarg"         : true,     // true: Prohibit use of `arguments.caller` and `arguments.callee`
   "noempty"       : true,     // true: Prohibit use of empty blocks
   "nonew"         : true,     // true: Prohibit use of constructors for side-effects (without assignment)
-  "plusplus"      : true,     // true: Prohibit use of `++` & `--`
+  "plusplus"      : false,    // true: Prohibit use of `++` & `--`
   "quotmark"      : "double", // Quotation mark consistency:
                               //   false    : do nothing (default)
                               //   true     : ensure whatever is used is consistent
