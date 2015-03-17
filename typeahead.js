@@ -347,7 +347,7 @@
             e.preventDefault();
 
             $scope.$apply(function() {
-              $scope.active = itemNodes[(itemNodes.map(itemNodeData).indexOf($scope.active) + 1) % itemNodes.length];
+              $scope.active = itemNodes[(itemNodes.map(itemNodeData).indexOf($scope.active) + 1) % itemNodes.length].data;
             });
           }
           else if(e.keyCode === KEY_ARROW_UP) {
