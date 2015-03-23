@@ -13,6 +13,7 @@
   /** @const */
   var CONFIG_DEFAULTS = {
     activeClass:   "mw-typeahead__item--active",
+    dropdownClass: "mw-typeahead__dropdown",
     caseSensitive: true,
     itemMax:       10,
     debounce:      100
@@ -65,6 +66,15 @@
      */
     this.setActiveClass = function(klass) {
       this._config.activeClass = klass;
+    };
+    /**
+     * Sets the default class-name which will be applied to the dropdown
+     * ul-element.
+     * 
+     * @param {string}
+     */
+    this.setDropdownClass = function(klass) {
+      this._config.dropdownClass = klass;
     };
     /**
      * Sets the default case-sensitivity setting for local matching
@@ -138,6 +148,11 @@
    *      those events will fire the queries immediately.
    *      
    *      Default: 100
+   *      
+   *  * dropdown-class:
+   *      The class(es) applied to the dropdown ul-element.
+   *      
+   *      Default: "mw-typeahead__dropdown"
    *
    * All of the defaults of the optional attributes can be changed via the
    * mwTypeaheadConfig provider.
@@ -199,6 +214,8 @@
         $scope.text        = null;
         $scope.active      = null;
         $scope.showList    = false;
+
+        elItemList.addClass(attrs.hasOwnProperty("dropdownClass") ? attrs.dropdownClass : config.dropdownClass);
 
         function toText(e) {
           return $scope.itemText({item: e});
