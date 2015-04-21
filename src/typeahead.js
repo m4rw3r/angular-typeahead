@@ -484,20 +484,16 @@
         });
 
         elInput.on("blur", function() {
-          /* Timeout required to avoid hiding the list before clicks can be
-             registered. */
-          $timeout(function() {
-            $scope.$apply(function() {
-              $scope.showList = false;
-            });
-          }, 50);
+          $scope.$apply(function() {
+            $scope.showList = false;
+          });
         });
       }
     };
   }
 
   function mwTypeaheadElemLink(elem, $scope, $parent, activeClass) {
-    elem.on("click", function() {
+    elem.on("mousedown", function() {
       $scope.$apply(function() {
         $scope.select($scope.item);
       });
