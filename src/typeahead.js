@@ -14,6 +14,8 @@
   var CONFIG_DEFAULTS = {
     activeClass:   "mw-typeahead__item--active",
     dropdownClass: "mw-typeahead__dropdown",
+    elementClass:  "mw-typeahead",
+    inputClass:    "mw-typeahead__input",
     caseSensitive: true,
     itemMax:       10,
     debounce:      100
@@ -58,6 +60,22 @@
       return this._config;
     };
     
+    /**
+     * Sets the default element class name for the surrounding div.
+     * 
+     * @param {string}
+     */
+    this.setElementClass = function(klass) {
+      this._config.elementClass = klass;
+    };
+    /**
+     * Sets the default input element class name.
+     * 
+     * @param {string}
+     */
+    this.setInputClass = function(klass) {
+      this._config.inputClass = klass;
+    };
     /**
      * Sets the default class-name which will be applied to highlighted
      * items in the suggestion-list.
@@ -153,6 +171,16 @@
    *      The class(es) applied to the dropdown ul-element.
    *      
    *      Default: "mw-typeahead__dropdown"
+   *      
+   *  * element-class:
+   *      The class added to the surrounding div.
+   *      
+   *      Default: "mw-typeahead"
+   *      
+   *  * input-class:
+   *      The class added to the input element.
+   *      
+   *      Default: "mw-typeahead__input"
    *
    * All of the defaults of the optional attributes can be changed via the
    * mwTypeaheadConfig provider.
@@ -215,7 +243,9 @@
         $scope.active      = null;
         $scope.showList    = false;
 
+        elInput.addClass(   attrs.hasOwnProperty("inputClass")    ? attrs.inputClass    : config.inputClass);
         elItemList.addClass(attrs.hasOwnProperty("dropdownClass") ? attrs.dropdownClass : config.dropdownClass);
+        elem.addClass(      attrs.hasOwnProperty("elementClass")  ? attrs.elementClass  : config.elementClass);
 
         function toText(e) {
           return $scope.itemText({item: e});
