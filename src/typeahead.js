@@ -429,7 +429,9 @@
             /* Only handle enter click if the user has not already selected something */
             e.preventDefault();
 
-            select($scope.active);
+            $scope.$apply(function() {
+              select($scope.active);
+            });
           }
           else if(e.keyCode === KEY_ARROW_DOWN) {
             e.preventDefault();
@@ -475,7 +477,9 @@
 
   function mwTypeaheadElemLink(elem, $scope, $parent, activeClass) {
     elem.on("click", function() {
-      $scope.select($scope.item);
+      $scope.$apply(function() {
+        $scope.select($scope.item);
+      });
     });
 
     var destroy = $parent.$watch("active", function() {
