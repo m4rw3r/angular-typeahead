@@ -16,6 +16,7 @@
     dropdownClass: "mw-typeahead__dropdown",
     elementClass:  "mw-typeahead",
     inputClass:    "mw-typeahead__input",
+    placeholder:   "",
     caseSensitive: true,
     itemMax:       10,
     debounce:      100
@@ -95,6 +96,14 @@
       this._config.dropdownClass = klass;
     };
     /**
+     * Sets the default placeholder text for the input element.
+     * 
+     * @param {string}
+     */
+    this.setPlaceholder = function(text) {
+      this._config.placeholder = text;
+    };
+    /**
      * Sets the default case-sensitivity setting for local matching
      * of item texts and input value.
      * 
@@ -167,6 +176,12 @@
    *      
    *      Default: 100
    *      
+   *  * placeholder:
+   *      The placeholder text for the input element. Will be set as the
+   *      placeholder attribute.
+   *      
+   *      Default: ""
+   *      
    *  * dropdown-class:
    *      The class(es) applied to the dropdown ul-element.
    *      
@@ -222,6 +237,8 @@
         var currentPromise = null;
         /* Promise for debounce of text-changes, used for debounce */
         var debounceText   = null;
+        /* Placeholder text for input element */
+        var placeholder    = attrs.hasOwnProperty("placeholder") ? attrs.placeholder : config.placeholder;
         /* If the internal matching and filtering should be case-sensitive */
         var caseSensitive  = fromBool(attrs.caseSensitive, config.caseSensitive);
         /* Cut off for internal filtering */
@@ -246,6 +263,10 @@
         elInput.addClass(   attrs.hasOwnProperty("inputClass")    ? attrs.inputClass    : config.inputClass);
         elItemList.addClass(attrs.hasOwnProperty("dropdownClass") ? attrs.dropdownClass : config.dropdownClass);
         elem.addClass(      attrs.hasOwnProperty("elementClass")  ? attrs.elementClass  : config.elementClass);
+
+        if(placeholder.length > 0) {
+          elInput.attr("placeholder", placeholder);
+        }
 
         function toText(e) {
           return $scope.itemText({item: e});
