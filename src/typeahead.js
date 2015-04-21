@@ -446,6 +446,11 @@
         };
 
         elem.on("keydown", function(e) {
+          if( ! $scope.showList) {
+            /* Ignore keyboard events if the list is not shown */
+            return;
+          }
+
           if(e.keyCode === KEY_ENTER && $scope.active !== ngModel.$viewValue) {
             /* Only handle enter click if the user has not already selected something */
             e.preventDefault();
